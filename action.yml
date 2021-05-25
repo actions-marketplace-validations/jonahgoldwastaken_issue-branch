@@ -1,5 +1,5 @@
 name: Issued branch
-description: Create a branch from an issue with a custom name pattern.
+description: Combine the power of issues, branches and prs together.
 author: Jonah Meijers
 runs:
   using: node12
@@ -14,4 +14,4 @@ inputs:
   name_pattern:
     required: true
     default: issue-{number}
-    description: The name pattern for the branch. Can use the issue number as variable.
+    description: The name pattern for the branch. Requires "{number}" to add issue number to branch names.
