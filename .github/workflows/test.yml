@@ -1,0 +1,17 @@
+name: Test action
+
+on:
+  issues:
+    types: [opened]
+  project_card:
+    types: [converted]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: ./
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          project_name: TestProject
