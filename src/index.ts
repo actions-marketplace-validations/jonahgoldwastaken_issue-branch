@@ -24,11 +24,11 @@ function run() {
 			parseProjectCard(project_card)
 		case 'push':
 			parsePush()
+		default:
+			core.setFailed(
+				'This action was not run using an "issue", "project_card" or "push" event, please supply at least one of these events for this action to work.'
+			)
 	}
-
-	return core.setFailed(
-		'Use a workflow trigger that passes an issue or project-card to the context'
-	)
 
 	function parseIssue(issue: WebhookPayload['issue']) {
 		const { title, number } = issue!
