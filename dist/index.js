@@ -6161,7 +6161,7 @@ function run() {
     const { issue, project_card } = github.context.payload;
     console.log(eventName);
     switch (eventName) {
-        case 'issue':
+        case 'issues':
             parseIssue(issue);
         case 'project_card':
             parseProjectCard(project_card);
