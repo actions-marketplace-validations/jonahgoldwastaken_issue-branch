@@ -10,7 +10,7 @@ branding:
 inputs:
   token:
     required: true
-    description:     description: The token provided by GitHub under secrets.GITHUB_TOKEN.
+    description: The token provided by GitHub under secrets.GITHUB_TOKEN.
   name_pattern:
     required: true
     default: issue-{number}
