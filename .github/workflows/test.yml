@@ -5,6 +5,8 @@ on:
     types: [opened]
   project_card:
     types: [converted]
+  push:
+    branches-ignore: [main]
 
 jobs:
   test:
