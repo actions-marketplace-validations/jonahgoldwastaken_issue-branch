@@ -29,6 +29,10 @@ function run() {
 		const { title, number } = issue!
 		const branchName = parseNamePattern(namePattern, { title, number })
 		try {
+			console.log(ref, branchName)
+
+			console.log('running request')
+
 			const { status } = await octokit.rest.git.createRef({
 				...repo,
 				sha: ref,
