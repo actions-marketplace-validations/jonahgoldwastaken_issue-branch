@@ -3,8 +3,6 @@ name: Test action
 on:
   issues:
     types: [opened]
-  project_card:
-    types: [converted]
   push:
     branches-ignore: [main]
 

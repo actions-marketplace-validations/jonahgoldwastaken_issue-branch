@@ -15,82 +15,46 @@ function run() {
 	const { repo, sha, ref } = github.context
 	const octokit = github.getOctokit(token)
 	const { eventName } = github.context
-	const { issue, project_card } = github.context.payload
+	const { issue } = github.context.payload
 
 	switch (eventName) {
 		case 'issues':
-			parseIssue(issue)
-			break
-		case 'project_card':
-			parseProjectCard(project_card)
+			runIssues(issue)
 			break
 		case 'push':
-			parsePush()
+			runPush()
 			break
 		default:
 			core.setFailed(
-				'This action was not run using an "issue", "project_card" or "push" event, please supply at least one of these events for this action to work.'
+				'This action was not run using an "issue" or "push" event, please supply at least one of these events for this action to work.'
 			)
 			break
 	}
 
-	function parseIssue(issue: WebhookPayload['issue']) {
-		const { title, number } = issue!
+	function runIssues(issue: WebhookPayload['issue']) {
+		const { number } = issue!
 		try {
-			const branchName = parseNamePattern(namePattern, { title, number })
+			const branchName = parseNamePattern(namePattern, { number })
 			return createBranch({ branchName, repo, sha })
 		} catch (err) {
 			core.setFailed(err)
 		}
 	}
 
-	async function parseProjectCard(project_card: any) {
-		if (!project_card.content_url)
-			return console.log('Card has no content, aborting peacefully...')
-		if (!project_card.content_url.contains('issue'))
-			return console.log('Card has no issue as content, aborting peacefully...')
-
-		const splitUrl = project_card.content_url.split('/')
-		const issueNumber: number = splitUrl[splitUrl.length - 1]
-		try {
-			const {
-				data: { title, number },
-			} = await octokit.request(
-				'GET /repos/{owner}/{repo}/issues/{issue_number}',
-				{
-					...repo,
-					issue_number: issueNumber,
-				}
-			)
-
-			const branchName = parseNamePattern(namePattern, { title, number })
-			return createBranch({ branchName, repo, sha })
-		} catch (err) {
-			core.setFailed(err)
-		}
-	}
-
-	async function parsePush() {
+	async function runPush() {
 		try {
 			const branch = ref.split('/')[ref.split('/').length - 1]
-			const { data } = await octokit.rest.pulls.list({
-				...repo,
-				base: branch,
-			})
-			if (data.length)
+			const pulls = await listPullsForHead(branch)
+			if (pulls.length)
 				return console.log('Pull request already created, returning...')
 
-			const { data: repository } = await octokit.rest.repos.get({
-				...repo,
-			})
+			const { fork, default_branch: mainBranch } = await getRepo(repo)
 
 			const issueNumber = namePattern
 				.split('{number}')
 				.reduce((acc, curr) => acc.replace(curr, ''), branch)
 
-			const base = repository.fork
-				? `${repo.owner}:${repository.default_branch}`
-				: repository.default_branch
+			const base = fork ? `${repo.owner}:${mainBranch}` : mainBranch
 
 			try {
 				await octokit.rest.pulls.create({
@@ -98,7 +62,6 @@ function run() {
 					base,
 					head: branch,
 					draft: true,
-					body: `closes #${issueNumber}`,
 					issue: +issueNumber,
 				})
 			} catch {
@@ -107,7 +70,6 @@ function run() {
 					base,
 					head: branch,
 					draft: false,
-					body: `closes #${issueNumber}`,
 					issue: +issueNumber,
 				})
 			}
@@ -116,6 +78,21 @@ function run() {
 		} catch (err) {
 			core.setFailed(`Error while creating PR: ${err}`)
 		}
+	}
+
+	async function listPullsForHead(head: string) {
+		const { data } = await octokit.rest.pulls.list({
+			...repo,
+			head,
+		})
+		return data
+	}
+
+	async function getRepo(repo: { owner: string; repo: string }) {
+		const { data } = await octokit.rest.repos.get({
+			...repo,
+		})
+		return data
 	}
 
 	async function createBranch({
@@ -143,9 +120,6 @@ function run() {
 	}
 }
 
-function parseNamePattern(
-	pattern: string,
-	{ title, number }: { title: string; number: number }
-) {
+function parseNamePattern(pattern: string, { number }: { number: number }) {
 	return pattern.replace('{number}', number.toString())
 }
