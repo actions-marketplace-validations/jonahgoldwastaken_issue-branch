@@ -14,4 +14,4 @@ inputs:
   name_pattern:
     required: true
     default: issue-{number}
-    description: The name pattern for the branch. Can use the issue number and title as variables.
+    description: The name pattern for the branch. Can use the issue number as variable.

@@ -6155,35 +6155,30 @@ function run() {
     const namePattern = core.getInput('name_pattern', {
         required: true,
     });
-    const repo = github.context.repo;
-    const sha = github.context.sha;
+    const { repo, sha, ref } = github.context;
     const octokit = github.getOctokit(token);
-    const { issue, project_card } = github.context.payload;
-    if (issue)
-        return parseIssue();
-    if (project_card)
-        return parseProjectCard();
+    const { action } = github.context;
+    const { issue, project_card, commits } = github.context.payload;
+    switch (action) {
+        case 'issue':
+            parseIssue(issue);
+        case 'project_card':
+            parseProjectCard(project_card);
+        case 'push':
+            parsePush();
+    }
     return core.setFailed('Use a workflow trigger that passes an issue or project-card to the context');
-    async function parseIssue() {
+    function parseIssue(issue) {
         const { title, number } = issue;
-        const branchName = parseNamePattern(namePattern, { title, number });
         try {
-            console.log(sha, branchName);
-            console.log('running request');
-            const { status } = await octokit.rest.git.createRef({
-                ...repo,
-                sha,
-                ref: `refs/heads/${branchName}`,
-            });
-            if (status !== 201)
-                return core.setFailed('Error creating ref, aborting...');
-            console.log(`successfully created branch with name "${branchName}"`);
+            const branchName = parseNamePattern(namePattern, { title, number });
+            return createBranch({ branchName, repo, sha });
         }
         catch (err) {
             core.setFailed(err);
         }
     }
-    async function parseProjectCard() {
+    async function parseProjectCard(project_card) {
         if (!project_card.content_url)
             return console.log('Card has no content, aborting peacefully...');
         if (!project_card.content_url.contains('issue'))
@@ -6196,24 +6191,57 @@ function run() {
                 issue_number: issueNumber,
             });
             const branchName = parseNamePattern(namePattern, { title, number });
-            const { status } = await octokit.rest.git.createRef({
-                ...repo,
-                sha,
-                ref: `refs/heads/${branchName}`,
-            });
-            if (status !== 201)
-                return core.setFailed('Error creating ref, aborting...');
-            console.log(`successfully created branch with name "${branchName}"`);
+            return createBranch({ branchName, repo, sha });
         }
         catch (err) {
             core.setFailed(err);
         }
     }
+    async function parsePush() {
+        try {
+            const branch = ref.split('/')[ref.split('/').length - 1];
+            const { data } = await octokit.rest.pulls.list({
+                ...repo,
+                base: branch,
+            });
+            if (data.length)
+                return console.log('Pull request already created, returning...');
+            const { data: repository } = await octokit.rest.repos.get({
+                ...repo,
+            });
+            const issueNumber = namePattern
+                .split('{number}')
+                .reduce((acc, curr) => acc.replace(curr, ''), branch);
+            await octokit.rest.pulls.create({
+                ...repo,
+                title: `PR for issue: ${issueNumber}`,
+                head: `${repo.owner}:${repository.default_branch}`,
+                base: branch,
+                draft: true,
+                issue: +issueNumber,
+            });
+            console.log(`Successfully create PR for issue #${issueNumber}`);
+        }
+        catch (err) {
+            core.setFailed(`Error while creating PR: ${err}`);
+        }
+    }
+    async function createBranch({ branchName, repo, sha, }) {
+        try {
+            await octokit.rest.git.createRef({
+                ...repo,
+                sha,
+                ref: `refs/heads/${branchName}`,
+            });
+            console.log(`successfully created branch with name "${branchName}"`);
+        }
+        catch (err) {
+            core.setFailed(`Error creating branch with repo "${repo}", branchName "${branchName}" and sha "${sha}": ${err}`);
+        }
+    }
 }
 function parseNamePattern(pattern, { title, number }) {
-    return pattern
-        .replace('{title}', title)
-        .replace('{number}', number.toString());
+    return pattern.replace('{number}', number.toString());
 }
 
 })();
