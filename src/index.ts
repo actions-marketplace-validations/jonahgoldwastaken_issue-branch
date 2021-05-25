@@ -91,16 +91,16 @@ function run() {
 			try {
 				await octokit.rest.pulls.create({
 					...repo,
-					head: `${repo.owner}:${repository.default_branch}`,
-					base: branch,
+					base: `${repo.owner}:${repository.default_branch}`,
+					head: branch,
 					draft: true,
 					issue: +issueNumber,
 				})
 			} catch {
 				await octokit.rest.pulls.create({
 					...repo,
-					head: `${repo.owner}:${repository.default_branch}`,
-					base: branch,
+					base: `${repo.owner}:${repository.default_branch}`,
+					head: branch,
 					draft: false,
 					issue: +issueNumber,
 				})
