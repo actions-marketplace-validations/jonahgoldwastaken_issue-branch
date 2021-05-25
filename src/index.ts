@@ -95,10 +95,14 @@ function run() {
 				repo.owner
 			)
 
+			const base = repository.fork
+				? `${repo.owner}:${repository.default_branch}`
+				: repository.default_branch
+
 			try {
 				await octokit.rest.pulls.create({
 					...repo,
-					base: `${repo.owner}:${repository.default_branch}`,
+					base,
 					head: branch,
 					draft: true,
 					issue: +issueNumber,
@@ -106,7 +110,7 @@ function run() {
 			} catch {
 				await octokit.rest.pulls.create({
 					...repo,
-					base: `${repo.owner}:${repository.default_branch}`,
+					base,
 					head: branch,
 					draft: false,
 					issue: +issueNumber,

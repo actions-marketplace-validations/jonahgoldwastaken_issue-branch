@@ -6218,10 +6218,13 @@ function run() {
                 .split('{number}')
                 .reduce((acc, curr) => acc.replace(curr, ''), branch);
             console.log(repository.master_branch, repository.default_branch, branch, repo.owner);
+            const base = repository.fork
+                ? `${repo.owner}:${repository.default_branch}`
+                : repository.default_branch;
             try {
                 await octokit.rest.pulls.create({
                     ...repo,
-                    base: `${repo.owner}:${repository.default_branch}`,
+                    base,
                     head: branch,
                     draft: true,
                     issue: +issueNumber,
@@ -6230,7 +6233,7 @@ function run() {
             catch (_a) {
                 await octokit.rest.pulls.create({
                     ...repo,
-                    base: `${repo.owner}:${repository.default_branch}`,
+                    base,
                     head: branch,
                     draft: false,
                     issue: +issueNumber,
