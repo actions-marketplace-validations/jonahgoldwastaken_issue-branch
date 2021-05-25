@@ -12,7 +12,7 @@ function run() {
 	})
 
 	const repo = github.context.repo
-	const ref = github.context.ref
+	const sha = github.context.sha
 
 	const octokit = github.getOctokit(token)
 
@@ -29,13 +29,13 @@ function run() {
 		const { title, number } = issue!
 		const branchName = parseNamePattern(namePattern, { title, number })
 		try {
-			console.log(ref, branchName)
+			console.log(sha, branchName)
 
 			console.log('running request')
 
 			const { status } = await octokit.rest.git.createRef({
 				...repo,
-				sha: ref,
+				sha,
 				ref: `refs/heads/${branchName}`,
 			})
 			if (status !== 201)
@@ -67,7 +67,7 @@ function run() {
 			const branchName = parseNamePattern(namePattern, { title, number })
 			const { status } = await octokit.rest.git.createRef({
 				...repo,
-				sha: ref,
+				sha,
 				ref: `refs/heads/${branchName}`,
 			})
 			if (status !== 201)
