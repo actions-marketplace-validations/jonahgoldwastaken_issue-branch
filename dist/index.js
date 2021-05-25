@@ -6155,6 +6155,8 @@ function run() {
     const namePattern = core.getInput('name_pattern', {
         required: true,
     });
+    if (!namePattern.includes('{number}'))
+        return core.setFailed('Please use a name pattern with "{number}" included, e.g. "issue-{number}"');
     const { repo, sha, ref } = github.context;
     const octokit = github.getOctokit(token);
     const { eventName } = github.context;
