@@ -88,6 +88,13 @@ function run() {
 				.split('{number}')
 				.reduce((acc, curr) => acc.replace(curr, ''), branch)
 
+			console.log(
+				repository.master_branch,
+				repository.default_branch,
+				branch,
+				repo.owner
+			)
+
 			try {
 				await octokit.rest.pulls.create({
 					...repo,
