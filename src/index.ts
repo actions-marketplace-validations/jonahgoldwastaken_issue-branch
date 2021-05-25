@@ -17,8 +17,6 @@ function run() {
 	const { eventName } = github.context
 	const { issue, project_card } = github.context.payload
 
-	console.log(eventName)
-
 	switch (eventName) {
 		case 'issues':
 			parseIssue(issue)

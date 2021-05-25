@@ -6159,7 +6159,6 @@ function run() {
     const octokit = github.getOctokit(token);
     const { eventName } = github.context;
     const { issue, project_card } = github.context.payload;
-    console.log(eventName);
     switch (eventName) {
         case 'issues':
             parseIssue(issue);
