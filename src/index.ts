@@ -91,7 +91,6 @@ function run() {
 			try {
 				await octokit.rest.pulls.create({
 					...repo,
-					title: `PR for issue: ${issueNumber}`,
 					head: `${repo.owner}:${repository.default_branch}`,
 					base: branch,
 					draft: true,
@@ -100,7 +99,6 @@ function run() {
 			} catch {
 				await octokit.rest.pulls.create({
 					...repo,
-					title: `PR for issue: ${issueNumber}`,
 					head: `${repo.owner}:${repository.default_branch}`,
 					base: branch,
 					draft: false,
