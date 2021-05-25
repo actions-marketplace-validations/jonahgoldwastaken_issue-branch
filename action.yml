@@ -1,0 +1,17 @@
+name: Issued branch
+description: Create a branch from an issue with a custom name pattern.
+author: Jonah Meijers
+runs:
+  using: node12
+  main: dist/index.js
+branding:
+  icon: git-branch
+  color: green
+inputs:
+  token:
+    required: true
+    description:     description: The token provided by GitHub under secrets.GITHUB_TOKEN.
+  name_pattern:
+    required: true
+    default: issue-{number}
+    description: The name pattern for the branch. Can use the issue number and title as variables.
