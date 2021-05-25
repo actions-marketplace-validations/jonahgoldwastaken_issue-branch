@@ -17,8 +17,6 @@ function run() {
 	const { eventName } = github.context
 	const { issue, project_card } = github.context.payload
 
-	console.log(eventName)
-
 	switch (eventName) {
 		case 'issues':
 			parseIssue(issue)
@@ -90,14 +88,34 @@ function run() {
 				.split('{number}')
 				.reduce((acc, curr) => acc.replace(curr, ''), branch)
 
-			await octokit.rest.pulls.create({
-				...repo,
-				title: `PR for issue: ${issueNumber}`,
-				head: `${repo.owner}:${repository.default_branch}`,
-				base: branch,
-				draft: true,
-				issue: +issueNumber,
-			})
+			console.log(
+				repository.master_branch,
+				repository.default_branch,
+				branch,
+				repo.owner
+			)
+
+			const base = repository.fork
+				? `${repo.owner}:${repository.default_branch}`
+				: repository.default_branch
+
+			try {
+				await octokit.rest.pulls.create({
+					...repo,
+					base,
+					head: branch,
+					draft: true,
+					issue: +issueNumber,
+				})
+			} catch {
+				await octokit.rest.pulls.create({
+					...repo,
+					base,
+					head: branch,
+					draft: false,
+					issue: +issueNumber,
+				})
+			}
 
 			console.log(`Successfully create PR for issue #${issueNumber}`)
 		} catch (err) {
