@@ -6167,14 +6167,19 @@ function run() {
     async function parseIssue() {
         const { title, number } = issue;
         const branchName = parseNamePattern(namePattern, { title, number });
-        const { status } = await octokit.rest.git.createRef({
-            ...repo,
-            sha: ref,
-            ref: `refs/heads/${branchName}`,
-        });
-        if (status !== 201)
-            return core.setFailed('Error creating ref, aborting...');
-        console.log(`successfully created branch with name "${branchName}"`);
+        try {
+            const { status } = await octokit.rest.git.createRef({
+                ...repo,
+                sha: ref,
+                ref: `refs/heads/${branchName}`,
+            });
+            if (status !== 201)
+                return core.setFailed('Error creating ref, aborting...');
+            console.log(`successfully created branch with name "${branchName}"`);
+        }
+        catch (err) {
+            core.setFailed(err);
+        }
     }
     async function parseProjectCard() {
         if (!project_card.content_url)
@@ -6183,19 +6188,24 @@ function run() {
             return console.log('Card has no issue as content, aborting peacefully...');
         const splitUrl = project_card.content_url.split('/');
         const issueNumber = splitUrl[splitUrl.length - 1];
-        const { data: { title, number }, } = await octokit.request('GET /repos/{owner}/{repo}/issues/{issue_number}', {
-            ...repo,
-            issue_number: issueNumber,
-        });
-        const branchName = parseNamePattern(namePattern, { title, number });
-        const { status } = await octokit.rest.git.createRef({
-            ...repo,
-            sha: ref,
-            ref: `refs/heads/${branchName}`,
-        });
-        if (status !== 201)
-            return core.setFailed('Error creating ref, aborting...');
-        console.log(`successfully created branch with name "${branchName}"`);
+        try {
+            const { data: { title, number }, } = await octokit.request('GET /repos/{owner}/{repo}/issues/{issue_number}', {
+                ...repo,
+                issue_number: issueNumber,
+            });
+            const branchName = parseNamePattern(namePattern, { title, number });
+            const { status } = await octokit.rest.git.createRef({
+                ...repo,
+                sha: ref,
+                ref: `refs/heads/${branchName}`,
+            });
+            if (status !== 201)
+                return core.setFailed('Error creating ref, aborting...');
+            console.log(`successfully created branch with name "${branchName}"`);
+        }
+        catch (err) {
+            core.setFailed(err);
+        }
     }
 }
 function parseNamePattern(pattern, { title, number }) {
