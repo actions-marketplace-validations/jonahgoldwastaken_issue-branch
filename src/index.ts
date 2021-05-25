@@ -88,14 +88,25 @@ function run() {
 				.split('{number}')
 				.reduce((acc, curr) => acc.replace(curr, ''), branch)
 
-			await octokit.rest.pulls.create({
-				...repo,
-				title: `PR for issue: ${issueNumber}`,
-				head: `${repo.owner}:${repository.default_branch}`,
-				base: branch,
-				draft: true,
-				issue: +issueNumber,
-			})
+			try {
+				await octokit.rest.pulls.create({
+					...repo,
+					title: `PR for issue: ${issueNumber}`,
+					head: `${repo.owner}:${repository.default_branch}`,
+					base: branch,
+					draft: true,
+					issue: +issueNumber,
+				})
+			} catch {
+				await octokit.rest.pulls.create({
+					...repo,
+					title: `PR for issue: ${issueNumber}`,
+					head: `${repo.owner}:${repository.default_branch}`,
+					base: branch,
+					draft: false,
+					issue: +issueNumber,
+				})
+			}
 
 			console.log(`Successfully create PR for issue #${issueNumber}`)
 		} catch (err) {
