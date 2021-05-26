@@ -6185,13 +6185,16 @@ function run() {
     async function runPush() {
         try {
             const branch = ref.split('/')[ref.split('/').length - 1];
+            const isValid = validateBranchName(branch, namePattern);
+            if (!isValid)
+                return console.log("Branch name doesn't match name pattern, aborting peacefully...");
             const { fork, default_branch: mainBranch } = await getRepo(repo);
             const base = mainBranch;
             const head = fork ? `${repo.owner}:${branch}` : branch;
             const pulls = await listPullsForHead(head);
             console.log(pulls.map(pull => pull.head));
             if (pulls.length)
-                return console.log('Pull request already created, returning...');
+                return console.log('Pull request already created, aborting peacefully...');
             const issueNumber = namePattern
                 .split('{number}')
                 .reduce((acc, curr) => acc.replace(curr, ''), branch);
@@ -6248,6 +6251,11 @@ function run() {
 }
 function parseNamePattern(pattern, { number }) {
     return pattern.replace('{number}', number.toString());
+}
+function validateBranchName(name, pattern) {
+    return !Number.isNaN(+pattern
+        .split('{number}')
+        .reduce((acc, curr) => acc.replace(curr, ''), name));
 }
 
 })();

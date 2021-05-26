@@ -50,6 +50,13 @@ function run() {
 		try {
 			const branch = ref.split('/')[ref.split('/').length - 1]
 
+			const isValid = validateBranchName(branch, namePattern)
+
+			if (!isValid)
+				return console.log(
+					"Branch name doesn't match name pattern, aborting peacefully..."
+				)
+
 			const { fork, default_branch: mainBranch } = await getRepo(repo)
 
 			const base = mainBranch
@@ -60,7 +67,9 @@ function run() {
 			console.log(pulls.map(pull => pull.head))
 
 			if (pulls.length)
-				return console.log('Pull request already created, returning...')
+				return console.log(
+					'Pull request already created, aborting peacefully...'
+				)
 
 			const issueNumber = namePattern
 				.split('{number}')
@@ -132,4 +141,12 @@ function run() {
 
 function parseNamePattern(pattern: string, { number }: { number: number }) {
 	return pattern.replace('{number}', number.toString())
+}
+
+function validateBranchName(name: string, pattern: string) {
+	return !Number.isNaN(
+		+pattern
+			.split('{number}')
+			.reduce((acc, curr) => acc.replace(curr, ''), name)
+	)
 }
