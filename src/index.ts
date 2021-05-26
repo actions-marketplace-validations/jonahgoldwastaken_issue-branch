@@ -60,12 +60,15 @@ function run() {
 				.reduce((acc, curr) => acc.replace(curr, ''), branch)
 
 			const base = fork ? `${repo.owner}:${mainBranch}` : mainBranch
+			const head = fork ? `${repo.owner}:${branch}` : branch
+
+			console.log('opening pr from', head, 'to', base)
 
 			try {
 				await octokit.rest.pulls.create({
 					...repo,
 					base,
-					head: branch,
+					head,
 					draft: true,
 					issue: +issueNumber,
 				})
@@ -73,7 +76,7 @@ function run() {
 				await octokit.rest.pulls.create({
 					...repo,
 					base,
-					head: branch,
+					head,
 					draft: false,
 					issue: +issueNumber,
 				})
