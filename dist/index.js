@@ -6189,6 +6189,7 @@ function run() {
             const base = mainBranch;
             const head = fork ? `${repo.owner}:${branch}` : branch;
             const pulls = await listPullsForHead(head);
+            console.log(pulls.map(pull => pull.head));
             if (pulls.length)
                 return console.log('Pull request already created, returning...');
             const issueNumber = namePattern

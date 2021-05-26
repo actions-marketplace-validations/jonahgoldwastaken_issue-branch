@@ -57,6 +57,8 @@ function run() {
 
 			const pulls = await listPullsForHead(head)
 
+			console.log(pulls.map(pull => pull.head))
+
 			if (pulls.length)
 				return console.log('Pull request already created, returning...')
 
