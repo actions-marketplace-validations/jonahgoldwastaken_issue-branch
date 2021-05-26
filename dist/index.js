@@ -6185,16 +6185,15 @@ function run() {
     async function runPush() {
         try {
             const branch = ref.split('/')[ref.split('/').length - 1];
-            const pulls = await listPullsForHead(branch);
+            const { fork, default_branch: mainBranch } = await getRepo(repo);
+            const base = mainBranch;
+            const head = fork ? `${repo.owner}:${branch}` : branch;
+            const pulls = await listPullsForHead(head);
             if (pulls.length)
                 return console.log('Pull request already created, returning...');
-            const { fork, default_branch: mainBranch } = await getRepo(repo);
             const issueNumber = namePattern
                 .split('{number}')
                 .reduce((acc, curr) => acc.replace(curr, ''), branch);
-            const base = mainBranch;
-            const head = fork ? `${repo.owner}:${branch}` : branch;
-            console.log('opening pr from', head, 'to', base);
             try {
                 await octokit.rest.pulls.create({
                     ...repo,
