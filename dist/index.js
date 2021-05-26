@@ -6192,7 +6192,7 @@ function run() {
             const issueNumber = namePattern
                 .split('{number}')
                 .reduce((acc, curr) => acc.replace(curr, ''), branch);
-            const base = fork ? `${repo.owner}:${mainBranch}` : mainBranch;
+            const base = mainBranch;
             const head = fork ? `${repo.owner}:${branch}` : branch;
             console.log('opening pr from', head, 'to', base);
             try {
