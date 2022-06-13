@@ -1,6 +1,6 @@
 import * as core from '@actions/core'
 import * as github from '@actions/github'
-import { value WebhookPayload } from '@actions/github/lib/interfaces'
+import { type WebhookPayload } from '@actions/github/lib/interfaces'
 
 run()
 
@@ -64,7 +64,11 @@ function run() {
 
 			const pulls = await listPullsForHead(head)
 
-			core.info(`Found pull requests for: "${pulls.map(pull => pull.head.label).join('", "')}"`)
+			core.info(
+				`Found pull requests for: "${pulls
+					.map(pull => pull.head.label)
+					.join('", "')}"`
+			)
 
 			if (pulls.length)
 				return console.log(
