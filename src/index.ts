@@ -21,7 +21,6 @@ function run() {
 	const octokit = github.getOctokit(token)
 	const { eventName } = github.context
 	const { issue } = github.context.payload
-	core.info(`Running in ref: ${ref}`)
 
 	switch (eventName) {
 		case 'issues':
@@ -104,6 +103,7 @@ function run() {
 	}
 
 	async function listPullsForHead(head: string) {
+		core.info("Listing pull requests for head: '" + head + "'")
 		const { data } = await octokit.rest.pulls.list({
 			...repo,
 			head,
