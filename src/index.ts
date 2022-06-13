@@ -21,6 +21,7 @@ function run() {
 	const octokit = github.getOctokit(token)
 	const { eventName } = github.context
 	const { issue } = github.context.payload
+	core.info(`Running in ref: ${ref}`)
 
 	switch (eventName) {
 		case 'issues':
@@ -57,9 +58,8 @@ function run() {
 					"Branch name doesn't match name pattern, aborting peacefully..."
 				)
 
-			const { fork, default_branch: mainBranch } = await getRepo(repo)
+			const { fork, default_branch: base } = await getRepo(repo)
 
-			const base = mainBranch
 			const head = fork ? `${repo.owner}:${branch}` : branch
 
 			const pulls = await listPullsForHead(head)
