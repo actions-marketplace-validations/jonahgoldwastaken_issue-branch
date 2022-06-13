@@ -1,6 +1,6 @@
 import * as core from '@actions/core'
 import * as github from '@actions/github'
-import { WebhookPayload } from '@actions/github/lib/interfaces'
+import { value WebhookPayload } from '@actions/github/lib/interfaces'
 
 run()
 
@@ -42,7 +42,7 @@ function run() {
 			const branchName = parseNamePattern(namePattern, { number })
 			return createBranch({ branchName, repo, sha })
 		} catch (err) {
-			core.setFailed(err)
+			core.setFailed(err as Error)
 		}
 	}
 
@@ -64,7 +64,7 @@ function run() {
 
 			const pulls = await listPullsForHead(head)
 
-			console.log(pulls.map(pull => pull.head))
+			core.info(`Found pull requests for: "${pulls.map(pull => pull.head.label).join('", "')}"`)
 
 			if (pulls.length)
 				return console.log(
@@ -93,7 +93,7 @@ function run() {
 				})
 			}
 
-			console.log(`Successfully create PR for issue #${issueNumber}`)
+			core.info(`Successfully create PR for issue #${issueNumber}`)
 		} catch (err) {
 			core.setFailed(`Error while creating PR: ${err}`)
 		}
@@ -130,7 +130,7 @@ function run() {
 				ref: `refs/heads/${branchName}`,
 			})
 
-			console.log(`successfully created branch with name "${branchName}"`)
+			core.info(`successfully created branch with name "${branchName}"`)
 		} catch (err) {
 			core.setFailed(
 				`Error creating branch with repo "${repo}", branchName "${branchName}" and sha "${sha}": ${err}`
