@@ -53,7 +53,7 @@ function run() {
 			const isValid = validateBranchName(branch, namePattern)
 
 			if (!isValid)
-				return console.log(
+				return core.info(
 					"Branch name doesn't match name pattern, aborting peacefully..."
 				)
 
@@ -62,6 +62,14 @@ function run() {
 			const head = `${repo.owner}:${branch}`
 
 			const pulls = await listPullsForHead(head)
+
+			if (core.isDebug()) {
+				core.info(
+					`Found pull requests for refs: "${pulls
+						.map(p => p.head.label)
+						.join('", "')}"`
+				)
+			}
 
 			if (pulls.length)
 				return core.info('Pull request already created, aborting peacefully...')
