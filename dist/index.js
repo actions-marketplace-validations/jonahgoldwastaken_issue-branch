@@ -8905,14 +8905,11 @@ function run() {
             const isValid = validateBranchName(branch, namePattern);
             if (!isValid)
                 return console.log("Branch name doesn't match name pattern, aborting peacefully...");
-            const { fork, default_branch: base } = await getRepo(repo);
+            const { default_branch: base } = await getRepo(repo);
             const head = `${repo.owner}:${branch}`;
             const pulls = await listPullsForHead(head);
-            core.info(`Found pull requests for: "${pulls
-                .map(pull => pull.head.label)
-                .join('", "')}"`);
             if (pulls.length)
-                return console.log('Pull request already created, aborting peacefully...');
+                return core.info('Pull request already created, aborting peacefully...');
             const issueNumber = namePattern
                 .split('{number}')
                 .reduce((acc, curr) => acc.replace(curr, ''), branch);
@@ -8941,7 +8938,6 @@ function run() {
         }
     }
     async function listPullsForHead(head) {
-        core.info("Listing pull requests for head: '" + head + "'");
         const { data } = await octokit.rest.pulls.list({
             ...repo,
             head,
@@ -8961,7 +8957,7 @@ function run() {
                 sha,
                 ref: `refs/heads/${branchName}`,
             });
-            core.info(`successfully created branch with name "${branchName}"`);
+            core.info(`Succesfully created branch with name "${branchName}"`);
         }
         catch (err) {
             core.setFailed(`Error creating branch with repo "${repo}", branchName "${branchName}" and sha "${sha}": ${err}`);
