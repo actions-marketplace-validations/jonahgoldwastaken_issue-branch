@@ -59,7 +59,7 @@ function run() {
 
 			const { fork, default_branch: base } = await getRepo(repo)
 
-			const head = fork ? `${repo.owner}:${branch}` : branch
+			const head = `${repo.owner}:${branch}`
 
 			const pulls = await listPullsForHead(head)
 

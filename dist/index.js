@@ -8906,7 +8906,7 @@ function run() {
             if (!isValid)
                 return console.log("Branch name doesn't match name pattern, aborting peacefully...");
             const { fork, default_branch: base } = await getRepo(repo);
-            const head = fork ? `${repo.owner}:${branch}` : branch;
+            const head = `${repo.owner}:${branch}`;
             const pulls = await listPullsForHead(head);
             core.info(`Found pull requests for: "${pulls
                 .map(pull => pull.head.label)
